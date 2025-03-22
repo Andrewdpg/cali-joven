@@ -1,6 +1,6 @@
-import { db } from "./lib/conectionDb";
-import { env } from "./config";
 import app from "./app";
+import { env } from "./config";
+import { db } from "./lib/conectionDb";
 
 db.then(() => {
   app.listen(env.PORT, () => {

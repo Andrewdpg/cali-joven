@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { User, UserLogin, UserUpdate } from "../models";
+import { User, UserLogin } from "../models";
 import { userService } from "../services";
 
 class UserController {

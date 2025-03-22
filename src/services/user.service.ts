@@ -1,5 +1,5 @@
-import { UserModel, UserDocument } from "../models";
 import bcrypt from "bcrypt";
+import { UserDocument, UserModel } from "../models";
 import { User, UserBase, UserUpdate } from "../types";
 
 class UserService {
@@ -47,7 +47,9 @@ class UserService {
     }
   }
 
-  public async deleteUserByEmail(email: User["email"]): Promise<UserDocument | null> {
+  public async deleteUserByEmail(
+    email: User["email"]
+  ): Promise<UserDocument | null> {
     try {
       return await UserModel.findOneAndDelete({ email });
     } catch (error) {

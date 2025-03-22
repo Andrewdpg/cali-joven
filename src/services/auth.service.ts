@@ -1,8 +1,8 @@
-import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { env } from "../config";
-import { AuthLogin, AuthLoginResponse, HTTPCode, UserAuth } from "../types";
 import { UserModel } from "../models";
+import { AuthLogin, AuthLoginResponse, HTTPCode, UserAuth } from "../types";
 
 class AuthService {
   public async login(user: AuthLogin): Promise<AuthLoginResponse> {

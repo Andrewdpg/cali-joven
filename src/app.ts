@@ -1,5 +1,4 @@
-
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import { authRouter, userRouter } from "./routes";
 
 const app: Express = express();

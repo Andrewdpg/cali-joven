@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import { userService, authService } from "../services";
-import { AuthLogin } from "../types";
-import { UserBase } from "../types";
+import { authService, userService } from "../services";
+import { AuthLogin, UserBase } from "../types";
 
 class AuthController {
   public async register(req: Request, res: Response) {

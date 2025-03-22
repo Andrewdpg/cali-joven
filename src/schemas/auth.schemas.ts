@@ -1,4 +1,4 @@
-import { object, string, number } from "zod";
+import { number, object, string } from "zod";
 
 export const RegisterSchema = object({
   name: string({ required_error: "Name is required" }),
