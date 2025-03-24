@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config";
+import { TokenPayload } from "../types";
 
 export const auth = (req: Request, res: Response, next: NextFunction): void => {
   const token: string | undefined = req.headers["authorization"]?.split(" ")[1];
@@ -11,7 +12,7 @@ export const auth = (req: Request, res: Response, next: NextFunction): void => {
   }
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.JWT_SECRET) as TokenPayload;
     req.body.user = decoded;
   } catch (ex) {
     if (ex instanceof jwt.TokenExpiredError) {
