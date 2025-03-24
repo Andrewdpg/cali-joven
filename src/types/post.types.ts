@@ -1,4 +1,4 @@
-export type Publication = {
+export type BasicPost = {
   title: string;
   description: string;
   type: string;
@@ -10,22 +10,22 @@ export type Publication = {
   tags: string[];
 };
 
-export type Event = {
-  publication_id: string;
+export type Event = 
+  BasicPost & {
   date: Date;
   location: string;
   registration_link: string;
 };
 
-export type Offer = {
-  publication_id: string;
+export type Offer = 
+  BasicPost & {
   type: string;
   external_link: string;
   deadline: Date;
 };
 
-export type News = {
-  publication_id: string;
+export type News = 
+  BasicPost & {
   author: string;
   tags: string[];
 };
@@ -40,3 +40,5 @@ export type EventAttendee = {
   event: string; 
   remainders: boolean;
 };
+
+export type Post = Event | Offer | News;
