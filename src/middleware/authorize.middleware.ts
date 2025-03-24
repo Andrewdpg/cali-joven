@@ -3,7 +3,7 @@ import { TokenPayload } from "../types";
 
 export const authorize = (requiredAuthorities: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const user = req.body.user as TokenPayload;
+    const user = req.body.payload as TokenPayload;
 
     if (!user || !user.authorities) {
       res.status(403).json({ message: "Access denied. No authorities found." });

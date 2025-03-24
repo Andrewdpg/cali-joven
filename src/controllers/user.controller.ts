@@ -6,7 +6,7 @@ class UserController {
   // TODO: Agregar respuesta adecuada
   public async createUser(req: Request, res: Response) {
     try {
-      const newUser = await userService.create(req.body as UserBase);
+      const newUser = await userService.create(req.body.data as UserBase);
       res.status(201).json(newUser);
     } catch (error) {
       if (error instanceof ReferenceError) {
@@ -44,7 +44,7 @@ class UserController {
   public async updateUser(req: Request, res: Response) {
     try {
       return await userService
-        .updateUserByEmail(req.params.id, req.body)
+        .updateUserByEmail(req.params.id, req.body.data)
         .then((user) => {
           if (!user) {
             res.status(404).json(`User with id ${req.params.id} not found`);
