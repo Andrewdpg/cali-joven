@@ -7,9 +7,50 @@ export enum HTTPCode {
   INTERNAL_SERVER_ERROR = 500,
 }
 
+// TODO: Eliminar esta respuesta, demasiado basica (o mirar en que caasos seria adecuada)
 export type CommonResponse = {
   message: {
     content: string;
     code: HTTPCode;
   };
 };
+
+export type BasicResponse = {
+  success: boolean;
+  message: string;
+};
+
+export type Metadata = {
+  timestamp: Date;
+  version: string;
+};
+
+export type CreationResponse = BasicResponse & {
+  data: {
+    id: string;
+    createdAt: Date;
+    resource: any;
+  };
+} & Metadata;
+
+export type UpdateResponse = BasicResponse & {
+  data: {
+    id: string;
+    updatedAt: Date;
+    resource: any;
+  };
+} & Metadata;
+
+export type DeleteResponse = BasicResponse & {
+  data: {
+    id: string;
+    deletedAt: Date;
+  };
+} & Metadata;
+
+export type ErrorResponse = BasicResponse & {
+  error: {
+    code: HTTPCode;
+    details: string;
+  };
+} & Metadata;
