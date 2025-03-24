@@ -22,3 +22,9 @@ export class ValidationError extends AppError {
     super(message, 400);
   }
 }
+
+export class AlreadyExistsError extends AppError {
+  constructor(message = "Already exists") {
+    super(message, 409);
+  }
+}

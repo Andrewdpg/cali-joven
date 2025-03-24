@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { postService } from "../services";
+import { errorWrapper } from "../middleware";
+import { attendeeService } from "../services/attendee.service";
 
 class PostCotroller {
   public async create(req: Request, res: Response) {
@@ -65,6 +67,15 @@ class PostCotroller {
         }
     }
         */
+
+  public enroll = errorWrapper(async (req: Request, res: Response) => {
+    const enrollement = await attendeeService.enroll({
+      event: req.params.id,
+      user: req.body.payload.user_id,
+      remainders: req.body.remainders,
+    });
+    res.status(200).json(enrollement);
+  });
 }
 
 export const postController = new PostCotroller();
