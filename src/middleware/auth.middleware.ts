@@ -12,12 +12,7 @@ export const auth = (req: Request, res: Response, next: NextFunction): void => {
   }
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as TokenPayload;
-    const originalData = {...req.body}
-    req.body = {
-      ...originalData,
-      payload: decoded,
-    };
+    req.body.payload = jwt.verify(token, env.JWT_SECRET) as TokenPayload;
   } catch (ex) {
     if (ex instanceof jwt.TokenExpiredError) {
       res.status(401).send("Access denied. Token expired.");
