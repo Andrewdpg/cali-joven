@@ -9,7 +9,7 @@ class AuthController {
   // TODO: Mejorar output error
   public async register(req: Request, res: Response) {
     try {
-      const newUser = await userService.create(req.body as UserBase);
+      const newUser = await userService.create(req.body.data as UserBase);
       const token = await generateToken({
         user_id: newUser._id.toString(),
         authorities: newUser.authorities,
@@ -28,7 +28,7 @@ class AuthController {
 
   public async login(req: Request, res: Response) {
     try {
-      const result = await authService.login(req.body as AuthLogin);
+      const result = await authService.login(req.body.data as AuthLogin);
       res.cookie("token", result.token);
       res.status(200).json(result);
     } catch (error) {
