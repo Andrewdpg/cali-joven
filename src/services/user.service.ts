@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { UserDocument, UserModel } from "../models";
 import { User, UserBase, UserPublic, UserUpdate } from "../types";
+import { NotFoundError } from "../exceptions";
 
 class UserService {
   public async create(user: UserBase) {
@@ -31,7 +32,7 @@ class UserService {
       }
       const user = await UserModel.findById(id);
       if (!user) {
-        return null;
+        throw new NotFoundError(`User with id ${id} not found`);
       }
       return this.toPublic(user);
     } catch (error) {
@@ -103,13 +104,7 @@ class UserService {
   }
 
   public async userExists(id: string): Promise<boolean> {
-    const user = await UserModel.findById(id);
-
-    if (!user) {
-      return false;
-    }
-
-    return true;
+    return (await UserModel.exists({ id })) != null;
   }
 }
 

@@ -6,12 +6,12 @@ export const RegisterSchema = object({
     message: "Invalid email",
   }),
   password: string({ required_error: "Password is required" }).regex(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&#]{8,}$/,
     {
       message:
-        "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number",
+        "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number. Valid special characters: @ $ ! % * ? & #",
     }
-  )
+  ),
 });
 
 export const LoginSchema = object({

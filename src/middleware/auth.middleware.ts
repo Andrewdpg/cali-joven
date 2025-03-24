@@ -15,7 +15,7 @@ export const auth = (req: Request, res: Response, next: NextFunction): void => {
     const decoded = jwt.verify(token, env.JWT_SECRET) as TokenPayload;
     const originalData = {...req.body}
     req.body = {
-      data: originalData,
+      ...originalData,
       payload: decoded,
     };
   } catch (ex) {
