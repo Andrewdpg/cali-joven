@@ -1,14 +1,15 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import { User } from "../types/user.types";
 
 export type UserDocument = User &
-  mongoose.Document & {
+  Document & {
+    _id: Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
     deletedAt: Date;
   };
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, index: true, unique: true },

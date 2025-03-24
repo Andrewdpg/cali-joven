@@ -5,12 +5,15 @@ import { AuthLogin, UserBase } from "../types";
 
 class AuthController {
   // TODO: Mejorar respuesta
-    // TODO: Mejorar datos del token
-      // TODO: Mejorar output error
+  // TODO: Mejorar datos del token
+  // TODO: Mejorar output error
   public async register(req: Request, res: Response) {
     try {
       const newUser = await userService.create(req.body as UserBase);
-      const token = await generateToken({ email: newUser.email, authorities: newUser.authorities });
+      const token = await generateToken({
+        user_id: newUser._id.toString(),
+        authorities: newUser.authorities,
+      });
 
       res.cookie("token", token);
       res.status(201).json({ token });

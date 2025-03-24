@@ -16,7 +16,7 @@ class AuthService {
       }
 
       const token = await generateToken({
-        email: userExists.email,
+        user_id: userExists._id.toString(),
         authorities: userExists.authorities as UserAuth["authorities"],
       });
 

@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { UserDocument, UserModel } from "../models";
-import { User, UserBase, UserUpdate, UserPublic } from "../types";
+import { User, UserBase, UserPublic, UserUpdate } from "../types";
 
 class UserService {
   public async create(user: UserBase) {
@@ -70,9 +70,7 @@ class UserService {
     }
   }
 
-  public async deleteUserById(
-    id: string
-  ): Promise<UserPublic | null> {
+  public async deleteUserById(id: string): Promise<UserPublic | null> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new Error("Invalid user ID");
@@ -102,6 +100,16 @@ class UserService {
       name: user.name,
       email: user.email,
     };
+  }
+
+  public async userExists(id: string): Promise<boolean> {
+    const user = await UserModel.findById(id);
+
+    if (!user) {
+      return false;
+    }
+
+    return true;
   }
 }
 

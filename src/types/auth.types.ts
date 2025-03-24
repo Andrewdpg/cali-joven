@@ -12,6 +12,6 @@ export type AuthLoginResponse = CommonResponse & {
 };
 
 export type TokenPayload = {
-  email: string;
+  user_id: string;
   authorities: string[];
 };
