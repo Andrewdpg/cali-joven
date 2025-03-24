@@ -1,12 +1,19 @@
 import { Request, Response } from "express";
+import { generateToken } from "../lib/jwt";
 import { authService, userService } from "../services";
 import { AuthLogin, UserBase } from "../types";
 
 class AuthController {
+  // TODO: Mejorar respuesta
+    // TODO: Mejorar datos del token
+      // TODO: Mejorar output error
   public async register(req: Request, res: Response) {
     try {
-      const newAuth = await userService.create(req.body as UserBase);
-      res.status(201).json(newAuth);
+      const newUser = await userService.create(req.body as UserBase);
+      const token = await generateToken({ email: newUser.email, authorities: newUser.authorities });
+
+      res.cookie("token", token);
+      res.status(201).json({ token });
     } catch (error) {
       if (error instanceof ReferenceError) {
         res.status(400).json(error.message);

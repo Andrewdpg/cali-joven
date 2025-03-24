@@ -10,3 +10,8 @@ export type AuthLoginResponse = CommonResponse & {
   user: UserPublic;
   token: string;
 };
+
+export type TokenPayload = {
+  email: string;
+  authorities: string[];
+};

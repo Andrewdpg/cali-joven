@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { env } from "../config";
+import { generateToken } from "../lib/jwt";
 import { UserModel } from "../models";
 import { AuthLogin, AuthLoginResponse, HTTPCode, UserAuth } from "../types";
 
@@ -15,13 +14,18 @@ class AuthService {
       if (!match) {
         throw new ReferenceError("Incorrect password");
       }
+
+      const token = await generateToken({
+        email: userExists.email,
+        authorities: userExists.authorities as UserAuth["authorities"],
+      });
+
       return {
         user: {
           name: userExists.name,
           email: userExists.email,
-          age: userExists.age,
         },
-        token: this.generateToken(userExists),
+        token: token,
         message: {
           content: "Login successful",
           code: HTTPCode.OK,
@@ -30,13 +34,6 @@ class AuthService {
     } catch (error) {
       throw error;
     }
-  }
-
-  public generateToken(user: UserAuth): string {
-    const token = jwt.sign({ user }, env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    return token;
   }
 }
 

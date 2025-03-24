@@ -11,10 +11,7 @@ export const RegisterSchema = object({
       message:
         "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, and one number",
     }
-  ),
-  age: number({ required_error: "Age is required" })
-    .min(18, { message: "Age must be between 18 and 50" })
-    .max(50, { message: "Age must be between 18 and 50" }),
+  )
 });
 
 export const LoginSchema = object({

@@ -8,15 +8,11 @@ export type UserAuth = {
   authorities: string[];
 };
 
-export type User = UserBase &
-  UserAuth & {
-    age: number;
-  };
+export type User = UserBase & UserAuth;
 
 export type UserPublic = {
   name: User["name"];
   email: User["email"];
-  age: User["age"];
 };
 
 export type UserUpdate = {

@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
-import { User, UserLogin } from "../models";
 import { userService } from "../services";
+import { UserBase } from "../types";
 
 class UserController {
-  public async CreateUser(req: Request, res: Response) {
+  // TODO: Agregar respuesta adecuada
+  public async createUser(req: Request, res: Response) {
     try {
-      const newUser = await userService.create(req.body as User);
+      const newUser = await userService.create(req.body as UserBase);
       res.status(201).json(newUser);
     } catch (error) {
       if (error instanceof ReferenceError) {
@@ -26,9 +27,9 @@ class UserController {
     }
   }
 
-  public getUserById(req: Request, res: Response) {
+  public getUserByEmail(req: Request, res: Response) {
     try {
-      return userService.findUserById(req.params.id).then((user) => {
+      return userService.findUserByEmail(req.params.id).then((user) => {
         if (!user) {
           res.status(404).json(`User with id ${req.params.id} not found`);
           return;
@@ -43,7 +44,7 @@ class UserController {
   public async updateUser(req: Request, res: Response) {
     try {
       return await userService
-        .updateUserById(req.params.id, req.body)
+        .updateUserByEmail(req.params.id, req.body)
         .then((user) => {
           if (!user) {
             res.status(404).json(`User with id ${req.params.id} not found`);
@@ -51,29 +52,6 @@ class UserController {
           }
           res.status(200).json(user);
         });
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  }
-
-  public async deleteUser(req: Request, res: Response) {
-    try {
-      return await userService.deleteUserById(req.params.id).then((user) => {
-        if (!user) {
-          res.status(404).json(`User with id ${req.params.id} not found`);
-          return;
-        }
-        res.status(204).json();
-      });
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  }
-
-  public async loginUser(req: Request, res: Response) {
-    try {
-      const result = await userService.login(req.body as UserLogin);
-      res.status(200).json(result);
     } catch (error) {
       res.status(500).json(error);
     }

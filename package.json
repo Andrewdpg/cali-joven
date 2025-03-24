@@ -32,5 +32,4 @@
   "eslintConfig": {
     "extends": "standard"
   }
-
 }

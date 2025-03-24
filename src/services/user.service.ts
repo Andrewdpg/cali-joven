@@ -5,12 +5,19 @@ import { User, UserBase, UserUpdate } from "../types";
 class UserService {
   public async create(user: UserBase) {
     try {
-      const userExists = (await this.findUserByEmail(user?.email)) !== null;
+      const userExists = (await this.findUserByEmail(user.email)) !== null;
       if (userExists) {
         throw new ReferenceError("User with that email already exists");
       }
       user.password = await bcrypt.hash(user.password, 10);
-      return await UserModel.create(user);
+
+      // Castear UserBase a User
+      const newUser: User = {
+        ...user,
+        authorities: [],
+      };
+
+      return await UserModel.create(newUser);
     } catch (error) {
       throw error;
     }
