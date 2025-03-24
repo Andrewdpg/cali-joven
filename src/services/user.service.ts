@@ -70,6 +70,23 @@ class UserService {
     }
   }
 
+  public async deleteUserById(
+    id: string
+  ): Promise<UserPublic | null> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error("Invalid user ID");
+      }
+      const user = await UserModel.findByIdAndDelete(id);
+      if (!user) {
+        return null;
+      }
+      return this.toPublic(user);
+    } catch (error) {
+      throw error;
+    }
+  }
+
   public async deleteUserByEmail(
     email: User["email"]
   ): Promise<UserDocument | null> {

@@ -73,7 +73,20 @@ class UserController {
     }
   }
 
-  public async deleteUser(req: Request, res: Response) {}
+  public async deleteUser(req: Request, res: Response) {
+    try {
+      return await userService.deleteUserById(req.params.id).then((user) => {
+        if (!user) {
+          res.status(404).json(`User with id ${req.params.id} not found`);
+          return;
+        }
+        res.status(200).json(user);
+      });
+    }
+    catch (error) {
+      res.status(500).json(error);
+    }
+  }
 }
 
 export const userController = new UserController();
