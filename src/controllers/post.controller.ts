@@ -76,6 +76,11 @@ class PostCotroller {
     });
     res.status(200).json(enrollement);
   });
+
+  public getEnrolledIn = errorWrapper(async (req: Request, res: Response) => {
+    const enrollement = await attendeeService.getEnrolledIn(req.params.id);
+    res.status(200).json(enrollement);
+  });
 }
 
 export const postController = new PostCotroller();

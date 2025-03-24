@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { EventAttendee } from "../types/post.types";
 
 export type AttendeeDocument = EventAttendee &
@@ -10,8 +10,8 @@ export type AttendeeDocument = EventAttendee &
 
 const attendeeSchema = new mongoose.Schema(
   {
-    user: { type: String, required: true },
-    event: { type: String, required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true }, // Referencia al modelo User
+    event: { type: Schema.Types.ObjectId, ref: "Event", required: true }, // Referencia al modelo Event
     remainders: { type: Boolean, required: true },
   },
   {

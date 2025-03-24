@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { PostDocument, PostModel } from "../models/post.model";
 import { Post } from "../types/post.types";
 import { userService } from "./user.service";
+import { ValidationError } from "../exceptions";
 
 class PostService {
   public async create(post: Post, user_id: string): Promise<PostDocument> {
@@ -39,6 +40,14 @@ class PostService {
     } catch (error) {
       throw error;
     }
+  }
+
+  public async getAttendableById(id: string): Promise<PostDocument> {
+    const post = await this.getById(id);
+    if (post.type !== "event") {
+      throw new ValidationError("Must be an enrollable event");
+    }
+    return post;
   }
   //public async update(id: string, post: Post): Promise<PostDocument | null> {}
 }
