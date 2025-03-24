@@ -56,6 +56,24 @@ class UserController {
       res.status(500).json(error);
     }
   }
+
+  public async getUserById(req: Request, res: Response) {
+    try {
+
+      return await userService.findUserById(req.params.id).then((user) => {
+        if (!user) {
+          res.status(404).json(`User with id ${req.params.id} not found`);
+          return;
+        }
+        res.status(200).json(user);
+      });
+
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
+  public async deleteUser(req: Request, res: Response) {}
 }
 
 export const userController = new UserController();

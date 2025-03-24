@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
+import mongoose from "mongoose";
 import { UserDocument, UserModel } from "../models";
-import { User, UserBase, UserUpdate } from "../types";
+import { User, UserBase, UserUpdate, UserPublic } from "../types";
 
 class UserService {
   public async create(user: UserBase) {
@@ -18,6 +19,21 @@ class UserService {
       };
 
       return await UserModel.create(newUser);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async findUserById(id: string): Promise<UserPublic | null> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error("Invalid user ID");
+      }
+      const user = await UserModel.findById(id);
+      if (!user) {
+        return null;
+      }
+      return this.toPublic(user);
     } catch (error) {
       throw error;
     }
@@ -62,6 +78,13 @@ class UserService {
     } catch (error) {
       throw error;
     }
+  }
+
+  private toPublic(user: UserDocument): UserPublic {
+    return {
+      name: user.name,
+      email: user.email,
+    };
   }
 }
 
