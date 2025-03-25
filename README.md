@@ -39,7 +39,8 @@ Esta solución busca cerrar la brecha digital y mejorar la transparencia, comuni
 
 ## **Arquitectura del Proyecto**
 
-El proyecto sigue una arquitectura **MVC (Modelo-Vista-Controlador)** con módulos específicos para cada funcionalidad.
+Este repositorio contiene únicamente el **backend** de Cali Joven, desarrollado con **Node.js** y **Express**.  
+El frontend será un proyecto independiente y se conectará a esta API.
 
 ```plaintext
 📂 cali-joven
@@ -89,13 +90,20 @@ npm install
 ```
 
 ## 2️⃣ Configuración del Entorno
-Crea un archivo `.env` con las siguientes variables:
+
+El proyecto requiere un archivo `.env` para configurar las variables de entorno.  
+**Los valores a continuación son solo ejemplos y deben ser reemplazados según tu configuración real.**  
 
 ```env
-PORT=5000
-DATABASE_URL=postgres://usuario:contraseña@localhost:5432/cali_joven
+# Puerto en el que se ejecutará el servidor Express  
+PORT=5000  
+
+# URL de conexión a la base de datos PostgreSQL  
+DATABASE_URL=postgres://usuario:contraseña@localhost:5432/cali_joven  
+
+# Clave secreta para la firma y validación de tokens JWT  
 JWT_SECRET=tu_secreto_seguro
-```
+``` 
 
 ## 3️⃣ Inicialización de la Base de Datos
 ```sh
