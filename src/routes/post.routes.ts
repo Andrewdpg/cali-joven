@@ -1,11 +1,17 @@
 import { Router } from "express";
 import { postController } from "../controllers";
-import { auth } from "../middleware";
+import { authorize, validateSchema } from "../middleware";
+import { CreatePostSchema } from "../schemas";
 
 export const postRouter = Router();
 
-postRouter.post("/", auth, postController.create);
-postRouter.get("/", auth, postController.getAll);
-postRouter.get("/:id", auth, postController.getById);
+postRouter.post(
+  "/",
+  authorize(["admin"]), 
+  validateSchema(CreatePostSchema),
+  postController.create
+);  
+postRouter.get("/", postController.getAll);
+postRouter.get("/:id", postController.getById);
 //postRouter.put("/:id", auth, postController.update);
-postRouter.delete("/:id", auth, postController.delete);
+//postRouter.delete("/:id", auth, postController.delete);
