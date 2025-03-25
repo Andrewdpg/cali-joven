@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { errorWrapper } from "../middleware";
 import { attendeeService } from "../services/attendee.service";
+import { toCreationResponse, toDeleteResponse } from "../mappers";
 
 class AttendeeController {
   public enroll = errorWrapper(async (req: Request, res: Response) => {
@@ -9,7 +10,7 @@ class AttendeeController {
       user: req.body.payload.user_id,
       remainders: req.body.remainders,
     });
-    res.status(200).json(enrollement);
+    res.status(200).json(toCreationResponse(enrollement));
   });
 
   public getEnrolledIn = errorWrapper(async (req: Request, res: Response) => {
@@ -17,22 +18,22 @@ class AttendeeController {
     res.status(200).json(enrollement);
   });
 
-  public async cancelEnrollment(req: Request, res: Response) {
+  public cancelEnrollment = errorWrapper(async (req: Request, res: Response) => {
     const userId = req.body.payload.user_id;
     const eventId = req.params.id;
 
     await attendeeService.cancelEnrollment(userId, eventId);
 
-    res.status(200).json({ message: "Enrollment canceled successfully" });
-  }
+    res.status(200).json(toDeleteResponse);
+  })
 
-  public async getMyEnrollments(req: Request, res: Response) {
+  public getMyEnrollments = errorWrapper(async(req: Request, res: Response) => {
     const userId = req.body.payload.user_id;
 
     const enrollments = await attendeeService.getUserEnrollments(userId);
 
     res.status(200).json(enrollments);
-  }
+  })
 }
 
 export const attendeeController = new AttendeeController();

@@ -1,32 +1,55 @@
 import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { env } from "../config";
 import { TokenPayload } from "../types";
 
 export const authorize = (requiredAuthorities: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const user = req.body.payload as TokenPayload;
+    const token: string | undefined =
+      req.headers["authorization"]?.split(" ")[1];
 
-    if (!user || !user.authorities) {
-      res.status(403).json({ message: "Access denied. No authorities found." });
+    if (!token) {
+      res.status(401).send("Access denied. No token provided.");
       return;
     }
 
-    console.log("User authorities: ", user.authorities);
+    try {
+      const decoded = jwt.verify(token, env.JWT_SECRET) as TokenPayload;
+      req.body.payload = decoded;
 
-    const hasAuthority = requiredAuthorities.some((authority) =>
-      user.authorities.includes(authority)
-    );
+      if (!decoded || !decoded.authorities) {
+        res
+          .status(403)
+          .json({ message: "Access denied. No authorities found." });
+        return;
+      }
 
-    /** En caso de que se requieran todas las autoridades
-    const hasAuthority = requiredAuthorities.every((authority) =>
-        user.authorities.includes(authority)
-    );
-    */
+      console.log("User authorities: ", decoded.authorities);
 
-    if (!hasAuthority) {
-      res.status(403).json({ message: "Access denied. Insufficient authorities." });
-      return;
+      const hasAuthority = requiredAuthorities.some((authority) =>
+        decoded.authorities.includes(authority)
+      );
+
+      /** En caso de que se requieran todas las autoridades
+      const hasAuthority = requiredAuthorities.every((authority) =>
+          decoded.authorities.includes(authority)
+      );
+      */
+
+      if (!hasAuthority) {
+        res
+          .status(403)
+          .json({ message: "Access denied. Insufficient authorities." });
+        return;
+      }
+
+      next();
+    } catch (ex) {
+      if (ex instanceof jwt.TokenExpiredError) {
+        res.status(401).send("Access denied. Token expired.");
+        return;
+      }
+      res.status(400).send(ex);
     }
-
-    next();
   };
 };
