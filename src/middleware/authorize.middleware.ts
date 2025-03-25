@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config";
 import { TokenPayload } from "../types";
 
-export const authorize = (requiredAuthorities: string[]) => {
+export const authorize = (requiredAuthorities: string[] = []) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const token: string | undefined =
       req.headers["authorization"]?.split(" ")[1];
