@@ -1,7 +1,5 @@
 # Cali Joven - Plataforma Digital para Juventudes
 
-## Descripción General
-
 **Cali Joven** es una plataforma digital diseñada para fortalecer la participación juvenil en Santiago de Cali. Su objetivo es servir como un canal centralizado donde los jóvenes puedan acceder a oportunidades, eventos y recursos proporcionados por la **Plataforma Distrital de Juventudes (PDJ)** y el **Consejo Distrital de Juventud (CDJ)**.
 
 Esta solución busca cerrar la brecha digital y mejorar la transparencia, comunicación y acceso a información clave, como normativas, becas, eventos y espacios de participación juvenil.
