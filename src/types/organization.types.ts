@@ -4,6 +4,7 @@ export type Organization = {
 };
 
 export type OrganizationPublic = {
+  id: string;
   name: string;
   acronym: string;
 };

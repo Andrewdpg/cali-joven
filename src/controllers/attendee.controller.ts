@@ -8,7 +8,7 @@ class AttendeeController {
     const enrollement = await attendeeService.enroll({
       event: req.params.id,
       user: req.body.payload.user_id,
-      remainders: req.body.remainders,
+      remainders: req.body.data.remainders,
     });
     res.status(200).json(toCreationResponse(enrollement));
   });

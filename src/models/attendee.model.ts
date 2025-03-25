@@ -11,7 +11,7 @@ export type AttendeeDocument = EventAttendee &
 const attendeeSchema = new mongoose.Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true }, // Referencia al modelo User
-    event: { type: Schema.Types.ObjectId, ref: "Event", required: true }, // Referencia al modelo Event
+    event: { type: Schema.Types.ObjectId, ref: "Post", required: true }, // Referencia al modelo Event
     remainders: { type: Boolean, required: true },
   },
   {

@@ -32,7 +32,7 @@ class AttendeeService {
   }
 
   public async exists(userId: string, eventId: string) {
-    return AttendeeModel.exists({ user: userId, event: eventId }) != null;
+    return await AttendeeModel.exists({ user: userId, event: eventId }) != null;
   }
 
   public async getById(userId: string, eventId: string) {

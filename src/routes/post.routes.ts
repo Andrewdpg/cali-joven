@@ -18,7 +18,7 @@ postRouter.delete("/:id", authorize(["admin"]), postController.delete);
 postRouter.get("/", postController.getAll);
 postRouter.get("/:id", postController.getById);
 
-postRouter.post("/:id/enroll", validateSchema(AttendeeSchema), attendeeController.enroll);
+postRouter.post("/:id/enroll", authorize(), validateSchema(AttendeeSchema), attendeeController.enroll);
 postRouter.get("/:id/enroll", authorize(["admin"]), attendeeController.getEnrolledIn);
-postRouter.delete("/:id/enroll", attendeeController.cancelEnrollment);
-postRouter.get("/my-enrollments", attendeeController.getMyEnrollments);
+postRouter.delete("/:id/enroll", authorize(), attendeeController.cancelEnrollment);
+postRouter.get("/enroll/my-enrollments", authorize(), attendeeController.getMyEnrollments);

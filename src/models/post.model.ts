@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { Post } from "../types/post.types";
 
 export type PostDocument = Post &
@@ -16,8 +16,8 @@ const postSchema = new mongoose.Schema(
     type: { type: String, required: true, enum: ["event", "offer", "news"] },
     attachments: { type: String },
     images: { type: [String], default: [] },
-    published_by: { type: String, required: true },
-    organizer_id: { type: String, required: true },
+    published_by: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    organizer_id: { type: Schema.Types.ObjectId, ref: "organizations", required: true },
     cities: { type: [String], required: true, default: [] },
     tags: { type: [String], required: true, default: [] },
 

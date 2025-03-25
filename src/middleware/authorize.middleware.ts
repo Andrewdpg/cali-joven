@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config";
 import { TokenPayload } from "../types";
 
-export const authorize = (requiredAuthorities: string[] = []) => {
+export const authorize = (requiredAuthorities?: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const token: string | undefined =
       req.headers["authorization"]?.split(" ")[1];
@@ -26,7 +26,7 @@ export const authorize = (requiredAuthorities: string[] = []) => {
 
       console.log("User authorities: ", decoded.authorities);
 
-      const hasAuthority = requiredAuthorities.some((authority) =>
+      const hasAuthority = requiredAuthorities && requiredAuthorities.some((authority) =>
         decoded.authorities.includes(authority)
       );
 
@@ -36,7 +36,7 @@ export const authorize = (requiredAuthorities: string[] = []) => {
       );
       */
 
-      if (!hasAuthority) {
+      if (requiredAuthorities && !hasAuthority) {
         res
           .status(403)
           .json({ message: "Access denied. Insufficient authorities." });
