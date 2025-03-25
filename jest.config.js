@@ -17,7 +17,6 @@ module.exports = {
     '!src/**/*.types.ts', // Excluye archivos de definición de tipos
     '!src/**/*.schemas.ts', // Excluye archivos de definición de equemas
     '!src/**/*.config.ts', // Excluye archivos de definición de configuración
-    '!src/**/*.model.ts', // Excluye archivos de definición de modelos
     '!src/**/index.ts', // Excluye archivos de barril
     '!src/**/app.ts' // Excluye archivo principal
   ],
