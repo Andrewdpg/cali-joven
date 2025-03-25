@@ -27,7 +27,6 @@ export type Metadata = {
 
 export type CreationResponse = BasicResponse & {
   data: {
-    id: string;
     createdAt: Date;
     resource: any;
   };
@@ -35,7 +34,6 @@ export type CreationResponse = BasicResponse & {
 
 export type UpdateResponse = BasicResponse & {
   data: {
-    id: string;
     updatedAt: Date;
     resource: any;
   };
@@ -43,7 +41,6 @@ export type UpdateResponse = BasicResponse & {
 
 export type DeleteResponse = BasicResponse & {
   data: {
-    id: string;
     deletedAt: Date;
   };
 } & Metadata;

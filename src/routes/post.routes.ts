@@ -2,14 +2,12 @@ import { Router } from "express";
 import { attendeeController, postController } from "../controllers";
 import { AttendeeSchema } from "../schemas/attendee.schemas";
 import { authorize, validateSchema } from "../middleware";
-import { CreatePostSchema } from "../schemas";
 
 export const postRouter = Router();
 
 postRouter.post(
   "/",
-  authorize(["admin"]), 
-  validateSchema(CreatePostSchema),
+  authorize(["admin"]),
   postController.create
 );  
 postRouter.get("/", postController.getAll);

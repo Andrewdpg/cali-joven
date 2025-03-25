@@ -1,5 +1,5 @@
 import express, { Express } from "express";
-import { authRouter, userRouter, postRouter } from "./routes";
+import { authRouter, userRouter, postRouter, organizationRouter } from "./routes";
 import { errorHandler } from "./middleware";
 import { wrapBody } from "./middleware/bodyWrap.middleware";
 
@@ -13,6 +13,7 @@ app.use(wrapBody); // wrap it into "{data:...}"
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/post", postRouter);
+app.use("/api/organization", organizationRouter)
 
 app.use(errorHandler);
 
