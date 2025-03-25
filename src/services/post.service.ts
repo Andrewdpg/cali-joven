@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { PostDocument, PostModel } from "../models/post.model";
-import { Post } from "../types/post.types";
+import { Post, PostUpdate } from "../types/post.types";
 import { userService } from "./user.service";
 import { ValidationError } from "../exceptions";
 
@@ -49,7 +49,19 @@ class PostService {
     }
     return post;
   }
-  //public async update(id: string, post: Post): Promise<PostDocument | null> {}
+
+  public async update(id: string, post: PostUpdate): Promise<PostDocument | null> {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error("Invalid post ID");
+      }
+      return await PostModel.findByIdAndUpdate(id, post, {
+        returnOriginal: false,
+      })
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export const postService = new PostService();

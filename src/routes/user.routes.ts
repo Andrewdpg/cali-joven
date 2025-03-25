@@ -4,7 +4,7 @@ import { authorize } from "../middleware";
 
 export const userRouter = Router();
 
-userRouter.get("/", userController.getAllUsers);
-userRouter.get("/:id", userController.getUserById);
-userRouter.put("/:id", userController.updateUser);
+userRouter.get("/", authorize(["admin"]), userController.getAllUsers);
+userRouter.get("/:id", authorize(["admin"]), userController.getUserById);
+userRouter.put("/:id", authorize(["admin"]), userController.updateUser);
 userRouter.delete("/:id", authorize(["admin"]), userController.deleteUser);

@@ -1,7 +1,7 @@
 export type BasicPost = {
   title: string;
   description: string;
-  type: string;
+  type: "event" | "offer" | "news";
   attachments: string;
   images: string[];
   published_by: string;
@@ -10,24 +10,22 @@ export type BasicPost = {
   tags: string[];
 };
 
-export type Event = 
-  BasicPost & {
+export type Event = BasicPost & {
+  type: "event";
   date: Date;
   location: string;
   registration_link: string;
 };
 
-export type Offer = 
-  BasicPost & {
-  type: string;
+export type Offer = BasicPost & {
+  type: "offer";
   external_link: string;
   deadline: Date;
 };
 
-export type News = 
-  BasicPost & {
+export type News = BasicPost & {
+  type: "news";
   author: string;
-  tags: string[];
 };
 
 export type Tag = {
@@ -35,10 +33,12 @@ export type Tag = {
   description: string;
 };
 
+export type Post = Event | Offer | News;
+
 export type EventAttendee = {
   user: string;
-  event: string; 
+  event: string;
   remainders: boolean;
 };
 
-export type Post = Event | Offer | News;
+export type PostUpdate = Partial<Post>;
