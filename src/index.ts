@@ -7,3 +7,5 @@ db.then(() => {
     console.log(`Server is running on port ${env.PORT}`);
   });
 });
+
+export default app;
