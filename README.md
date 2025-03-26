@@ -30,7 +30,7 @@ Esta solución busca cerrar la brecha digital y mejorar la transparencia, comuni
 | **Node.js** | Plataforma de ejecución para JavaScript en el backend. |
 | **Express.js** | Framework web para crear y gestionar API REST. |
 | **TypeScript** | Lenguaje tipado que mejora la seguridad y legibilidad del código. |
-| **PostgreSQL** | Base de datos relacional para almacenar información de usuarios y publicaciones. |
+| **MongoDB** | Base de datos no relacional para almacenar información de usuarios y publicaciones. |
 | **Jest** | Framework de pruebas automatizadas. |
 | **JWT (JSON Web Tokens)** | Sistema de autenticación y autorización seguro. |
 | **Postman** | Herramienta para probar y documentar la API. |
@@ -98,8 +98,8 @@ El proyecto requiere un archivo `.env` para configurar las variables de entorno.
 # Puerto en el que se ejecutará el servidor Express  
 PORT=5000  
 
-# URL de conexión a la base de datos PostgreSQL  
-DATABASE_URL=postgres://usuario:contraseña@localhost:5432/cali_joven  
+# URL de conexión a la base de datos MongoDB  
+DATABASE_URL=mongodb+srv://<username>:<password>@<clustername>.<mongoDB>
 
 # Clave secreta para la firma y validación de tokens JWT  
 JWT_SECRET=tu_secreto_seguro
