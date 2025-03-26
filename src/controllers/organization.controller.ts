@@ -1,13 +1,24 @@
 import { Request, Response } from "express";
+import {
+  toCreationResponse,
+  toDeleteResponse,
+  toUpdateResponse,
+} from "../mappers";
+import { organizationMapper } from "../mappers/organization.mapper";
+import { errorWrapper } from "../middleware";
 import { organizationService } from "../services";
 import { Organization } from "../types";
-import { errorWrapper } from "../middleware";
-import { toCreationResponse, toDeleteResponse, toUpdateResponse } from "../mappers";
-import { organizationMapper } from "../mappers/organization.mapper";
 
+/**
+ * Controller handling organization-related operations including:
+ * creation, retrieval, updating, and deletion of organizations.
+ */
 class OrganizationController {
   /**
-   * Crear una nueva organización
+   * Creates a new organization.
+   * @param {Request} req - Express request object containing organization data in req.body.data
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with the created organization data
    */
   public create = errorWrapper(
     async (req: Request, res: Response): Promise<void> => {
@@ -24,7 +35,10 @@ class OrganizationController {
   );
 
   /**
-   * Obtener una organización por ID
+   * Retrieves an organization by ID.
+   * @param {Request} req - Express request object with organization ID in req.params.id
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with the organization data
    */
   public findById = errorWrapper(
     async (req: Request, res: Response): Promise<void> => {
@@ -35,7 +49,10 @@ class OrganizationController {
   );
 
   /**
-   * Obtener todas las organizaciones
+   * Retrieves all organizations from the system.
+   * @param {Request} req - Express request object
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with an array of all organizations
    */
   public findAll = errorWrapper(
     async (req: Request, res: Response): Promise<void> => {
@@ -49,7 +66,10 @@ class OrganizationController {
   );
 
   /**
-   * Actualizar una organización por ID
+   * Updates an organization by ID.
+   * @param {Request} req - Express request object with organization ID in req.params.id and update data in req.body.data
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with the updated organization data
    */
   public updateById = errorWrapper(
     async (req: Request, res: Response): Promise<void> => {
@@ -66,7 +86,10 @@ class OrganizationController {
   );
 
   /**
-   * Eliminar una organización por ID
+   * Deletes an organization by ID.
+   * @param {Request} req - Express request object with organization ID in req.params.id
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with a 204 status code on success
    */
   public deleteById = errorWrapper(
     async (req: Request, res: Response): Promise<void> => {
@@ -76,7 +99,12 @@ class OrganizationController {
     }
   );
 
-  // Agregar un usuario a una organización
+  /**
+   * Adds a user to an organization with a specified role.
+   * @param {Request} req - Express request object with user ID in req.params.userId, organization ID in req.params.id, and role in req.body.data.role
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with the updated organization-user data
+   */
   public addUserToOrganization = errorWrapper(
     async (req: Request, res: Response) => {
       const { role } = req.body.data;
@@ -90,7 +118,12 @@ class OrganizationController {
     }
   );
 
-  // Quitar un usuario de una organización
+  /**
+   * Removes a user from an organization.
+   * @param {Request} req - Express request object with user ID in req.params.userId and organization ID in req.params.id
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with a 204 status code on success
+   */
   public removeUserFromOrganization = errorWrapper(
     async (req: Request, res: Response) => {
       const { id: organizationId, userId } = req.params;
@@ -102,7 +135,12 @@ class OrganizationController {
     }
   );
 
-  // Actualizar el rol de un usuario en una organización
+  /**
+   * Updates a user's role within an organization.
+   * @param {Request} req - Express request object with user ID in req.params.userId, organization ID in req.params.id, and new role in req.body.data.role
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with the updated organization-user data
+   */
   public updateUserRole = errorWrapper(async (req: Request, res: Response) => {
     const { id: organizationId, userId } = req.params;
     const { role } = req.body.data;

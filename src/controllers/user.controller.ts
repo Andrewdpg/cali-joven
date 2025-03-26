@@ -4,19 +4,40 @@ import { errorWrapper } from "../middleware";
 import { userService } from "../services";
 import { UserBase } from "../types";
 
+/**
+ * Controller handling user-related operations including:
+ * creation, retrieval, updating, and deletion of users.
+ */
 class UserController {
-  // TODO: Agregar respuesta adecuada
+  /**
+   * Creates a new user in the system.
+   * @param {Request} req - Express request object containing user data
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with the created user data
+   */
   public async createUser(req: Request, res: Response) {
     const newUser = await userService.create(req.body.data as UserBase);
     res.status(201).json(newUser);
   }
 
+  /**
+   * Retrieves all users from the system.
+   * @param {Request} req - Express request object
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with an array of all users
+   */
   public getAllUsers(req: Request, res: Response) {
     return userService.findAllUsers().then((users) => {
       res.status(200).json(users);
     });
   }
 
+  /**
+   * Retrieves a specific user by their email.
+   * @param {Request} req - Express request object with user email in params
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with the requested user data
+   */
   public getUserByEmail(req: Request, res: Response) {
     return userService.findUserByEmail(req.params.id).then((user) => {
       if (!user) {
@@ -27,6 +48,12 @@ class UserController {
     });
   }
 
+  /**
+   * Updates an existing user by their ID.
+   * @param {Request} req - Express request object with user ID and update data
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with the updated user data
+   */
   public async updateUser(req: Request, res: Response) {
     return await userService
       .updateUserById(req.params.id, req.body.data)
@@ -39,6 +66,12 @@ class UserController {
       });
   }
 
+  /**
+   * Retrieves a specific user by their ID.
+   * @param {Request} req - Express request object with user ID in params
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with the requested user data
+   */
   public async getUserById(req: Request, res: Response) {
     return await userService.findUserById(req.params.id).then((user) => {
       if (!user) {
@@ -49,6 +82,12 @@ class UserController {
     });
   }
 
+  /**
+   * Deletes a specific user by their ID.
+   * @param {Request} req - Express request object with user ID in params
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with deletion confirmation
+   */
   public async deleteUser(req: Request, res: Response) {
     const authenticatedUserId = req.body.payload.user_id; // ID del usuario autenticado
 
@@ -63,14 +102,24 @@ class UserController {
       });
   }
 
-  // Agregar un rol a un usuario
+  /**
+   * Adds a role to a specific user.
+   * @param {Request} req - Express request object with user ID and role in params
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with updated user data
+   */
   public addRoleToUser = errorWrapper(async (req: Request, res: Response) => {
     const { id: userId, role } = req.params;
     const user = await userService.addRoleToUser(userId, role);
     res.status(200).json(toCreationResponse(userMapper.DocumentToPublic(user)));
   });
 
-  // Quitar un rol de un usuario
+  /**
+   * Removes a role from a specific user.
+   * @param {Request} req - Express request object with user ID and role in params
+   * @param {Response} res - Express response object
+   * @returns {Promise<void>} Responds with updated user data
+   */
   public removeRoleFromUser = errorWrapper(
     async (req: Request, res: Response) => {
       const { id: userId, role } = req.params;
