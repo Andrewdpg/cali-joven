@@ -15,10 +15,10 @@ class UserController {
    * @param {Response} res - Express response object
    * @returns {Promise<void>} Responds with the created user data
    */
-  public async createUser(req: Request, res: Response) {
+  public createUser = errorWrapper(async (req: Request, res: Response) => {
     const newUser = await userService.create(req.body.data as UserBase);
     res.status(201).json(newUser);
-  }
+  });
 
   /**
    * Retrieves all users from the system.
@@ -26,11 +26,11 @@ class UserController {
    * @param {Response} res - Express response object
    * @returns {Promise<void>} Responds with an array of all users
    */
-  public getAllUsers(req: Request, res: Response) {
+  public getAllUsers = errorWrapper(async (req: Request, res: Response) => {
     return userService.findAllUsers().then((users) => {
       res.status(200).json(users);
     });
-  }
+  });
 
   /**
    * Retrieves a specific user by their email.
@@ -38,7 +38,7 @@ class UserController {
    * @param {Response} res - Express response object
    * @returns {Promise<void>} Responds with the requested user data
    */
-  public getUserByEmail(req: Request, res: Response) {
+  public getUserByEmail = errorWrapper(async (req: Request, res: Response) => {
     return userService.findUserByEmail(req.params.id).then((user) => {
       if (!user) {
         res.status(404).json(`User with id ${req.params.id} not found`);
@@ -46,7 +46,7 @@ class UserController {
       }
       res.status(200).json(user);
     });
-  }
+  });
 
   /**
    * Updates an existing user by their ID.
@@ -54,7 +54,7 @@ class UserController {
    * @param {Response} res - Express response object
    * @returns {Promise<void>} Responds with the updated user data
    */
-  public async updateUser(req: Request, res: Response) {
+  public updateUser = errorWrapper(async (req: Request, res: Response) => {
     return await userService
       .updateUserById(req.params.id, req.body.data)
       .then((user) => {
@@ -64,7 +64,7 @@ class UserController {
         }
         res.status(200).json(user);
       });
-  }
+  });
 
   /**
    * Retrieves a specific user by their ID.
@@ -72,7 +72,7 @@ class UserController {
    * @param {Response} res - Express response object
    * @returns {Promise<void>} Responds with the requested user data
    */
-  public async getUserById(req: Request, res: Response) {
+  public getUserById = errorWrapper(async (req: Request, res: Response) => {
     return await userService.findUserById(req.params.id).then((user) => {
       if (!user) {
         res.status(404).json(`User with id ${req.params.id} not found`);
@@ -80,7 +80,7 @@ class UserController {
       }
       res.status(200).json(user);
     });
-  }
+  });
 
   /**
    * Deletes a specific user by their ID.
@@ -88,7 +88,7 @@ class UserController {
    * @param {Response} res - Express response object
    * @returns {Promise<void>} Responds with deletion confirmation
    */
-  public async deleteUser(req: Request, res: Response) {
+  public deleteUser = errorWrapper(async (req: Request, res: Response) => {
     const authenticatedUserId = req.body.payload.user_id; // ID del usuario autenticado
 
     return await userService
@@ -100,7 +100,7 @@ class UserController {
         }
         res.status(200).json(user);
       });
-  }
+  });
 
   /**
    * Adds a role to a specific user.

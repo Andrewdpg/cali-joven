@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import mongoose, { Error } from "mongoose";
 import { UserDocument, UserModel } from "../models";
 import { User, UserBase, UserPublic, UserUpdate } from "../types";
-import { AlreadyExistsError, NotFoundError } from "../exceptions";
+import { AlreadyExistsError, NotFoundError, ValidationError } from "../exceptions";
 import { userMapper } from "../mappers";
 
 /**
@@ -45,7 +45,7 @@ class UserService {
   public async findUserById(id: string): Promise<UserPublic | null> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("Invalid user ID");
+        throw new ValidationError("Invalid user ID");
       }
       const user = await UserModel.findById(id);
       if (!user) {
@@ -97,7 +97,7 @@ class UserService {
   ): Promise<UserDocument | null> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("Invalid user ID");
+        throw new ValidationError("Invalid user ID");
       }
 
       return await UserModel.findByIdAndUpdate(id, user, {
@@ -122,11 +122,11 @@ class UserService {
   ): Promise<UserPublic | null> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("Invalid user ID");
+        throw new ValidationError("Invalid user ID");
       }
 
       if (id === authenticatedUserId) {
-        throw new Error("You cannot delete your own account");
+        throw new ValidationError("You cannot delete your own account");
       }
 
       const user = await UserModel.findByIdAndDelete(id);
