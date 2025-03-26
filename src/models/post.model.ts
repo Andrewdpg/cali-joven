@@ -17,7 +17,7 @@ const postSchema = new mongoose.Schema(
     attachments: { type: String },
     images: { type: [String], default: [] },
     published_by: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    organizer_id: { type: Schema.Types.ObjectId, ref: "organizations", required: true },
+    organizer_id: { type: Schema.Types.ObjectId, ref: "Organization", required: true },
     cities: { type: [String], required: true, default: [] },
     tags: { type: [String], required: true, default: [] },
 

@@ -11,6 +11,7 @@ export type UserAuth = {
 export type User = UserBase & UserAuth;
 
 export type UserPublic = {
+  _id: string;
   name: User["name"];
   email: User["email"];
 };

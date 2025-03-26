@@ -5,3 +5,6 @@ export const CreateOrganizationSchema = object({
   acronym: string({ required_error: "Acronym is required" }),
 });
 
+export const UserToOrganizationSchema = object({
+  role: string({ required_error: "Role is required" }),
+});

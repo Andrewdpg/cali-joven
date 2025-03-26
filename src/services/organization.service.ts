@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { OrganizationModel, OrganizationDocument } from "../models";
+import { OrganizationModel, OrganizationDocument, UserOrganizationModel } from "../models";
 import { Organization } from "../types";
 import {
   AlreadyExistsError,
@@ -96,6 +96,34 @@ class OrganizationService {
     if (!deleted) {
       throw new NotFoundError(`Organization with ID ${id} not found`);
     }
+  }
+
+  public async addUserToOrganization(userId: string, organizationId: string, role: string) {
+    const exists = await UserOrganizationModel.findOne({ user: userId, organization: organizationId });
+    if (exists) {
+      throw new AlreadyExistsError("User is already part of the organization");
+    }
+
+    return await UserOrganizationModel.create({ user: userId, organization: organizationId, role });
+  }
+
+  public async removeUserFromOrganization(userId: string, organizationId: string) {
+    const record = await UserOrganizationModel.findOneAndDelete({ user: userId, organization: organizationId });
+    if (!record) {
+      throw new NotFoundError("User is not part of the organization");
+    }
+  }
+
+  public async updateUserRole(userId: string, organizationId: string, role: string) {
+    const record = await UserOrganizationModel.findOneAndUpdate(
+      { user: userId, organization: organizationId },
+      { role },
+      { new: true }
+    );
+    if (!record) {
+      throw new NotFoundError("User is not part of the organization");
+    }
+    return record;
   }
 }
 

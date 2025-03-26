@@ -1,8 +1,9 @@
 import bcrypt from "bcrypt";
-import mongoose from "mongoose";
+import mongoose, { Error } from "mongoose";
 import { UserDocument, UserModel } from "../models";
 import { User, UserBase, UserPublic, UserUpdate } from "../types";
-import { NotFoundError } from "../exceptions";
+import { AlreadyExistsError, NotFoundError } from "../exceptions";
+import { userMapper } from "../mappers";
 
 class UserService {
   public async create(user: UserBase) {
@@ -34,7 +35,7 @@ class UserService {
       if (!user) {
         throw new NotFoundError(`User with id ${id} not found`);
       }
-      return this.toPublic(user);
+      return userMapper.DocumentToPublic(user);
     } catch (error) {
       throw error;
     }
@@ -58,34 +59,52 @@ class UserService {
     }
   }
 
-  public async updateUserByEmail(
-    email: User["email"],
+  public async updateUserById(
+    id: string,
     user: UserUpdate
   ): Promise<UserDocument | null> {
     try {
-      return await UserModel.findByIdAndUpdate({ email }, user, {
-        returnOriginal: false,
-      }).select("-password");
+      // Validar que el ID sea un ObjectId válido
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error("Invalid user ID");
+      }
+
+      // Actualizar el usuario
+      return await UserModel.findByIdAndUpdate(id, user, {
+        returnOriginal: false, // Devuelve el documento actualizado
+        new: true, // Asegura que se devuelva el documento actualizado
+      }).select("-password"); // Excluir el campo `password` de la respuesta
     } catch (error) {
       throw error;
     }
   }
 
-  public async deleteUserById(id: string): Promise<UserPublic | null> {
+  public async deleteUserById(
+    id: string,
+    authenticatedUserId: string
+  ): Promise<UserPublic | null> {
     try {
+      // Validar que el ID sea un ObjectId válido
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new Error("Invalid user ID");
       }
+
+      // Verificar si el usuario intenta eliminarse a sí mismo
+      if (id === authenticatedUserId) {
+        throw new Error("You cannot delete your own account");
+      }
+
+      // Eliminar el usuario
       const user = await UserModel.findByIdAndDelete(id);
       if (!user) {
         return null;
       }
-      return this.toPublic(user);
+
+      return userMapper.DocumentToPublic(user);
     } catch (error) {
       throw error;
     }
   }
-
   public async deleteUserByEmail(
     email: User["email"]
   ): Promise<UserDocument | null> {
@@ -96,15 +115,34 @@ class UserService {
     }
   }
 
-  private toPublic(user: UserDocument): UserPublic {
-    return {
-      name: user.name,
-      email: user.email,
-    };
-  }
-
   public async userExists(id: string): Promise<boolean> {
     return (await UserModel.exists({ id })) != null;
+  }
+
+  public async addRoleToUser(userId: string, role: string) {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (user.authorities.includes(role)) {
+      throw new AlreadyExistsError("User already has this role");
+    }
+
+    user.authorities.push(role);
+    await user.save();
+    return user;
+  }
+
+  public async removeRoleFromUser(userId: string, role: string) {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    user.authorities = user.authorities.filter((r) => r !== role);
+    await user.save();
+    return user;
   }
 }
 

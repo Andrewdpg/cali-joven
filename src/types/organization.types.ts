@@ -15,3 +15,10 @@ export type Commission = {
   leader: string;
   members: string[];
 };
+
+// Relaciones con otras entidades
+export type UserOrganization = {
+  user: string; // ID del usuario
+  organization: string; // ID de la organización
+  role: string; // Rol del usuario en la organización
+}
