@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { organizationService } from "../services";
 import { Organization } from "../types";
 import { errorWrapper } from "../middleware";
-import { toCreationResponse, toDeleteResponse } from "../mappers";
+import { toCreationResponse, toDeleteResponse, toUpdateResponse } from "../mappers";
 import { organizationMapper } from "../mappers/organization.mapper";
 
 class OrganizationController {
@@ -75,6 +75,44 @@ class OrganizationController {
       res.status(204).json(toDeleteResponse);
     }
   );
+
+  // Agregar un usuario a una organización
+  public addUserToOrganization = errorWrapper(
+    async (req: Request, res: Response) => {
+      const { role } = req.body.data;
+      const { id: organizationId, userId } = req.params;
+      const result = await organizationService.addUserToOrganization(
+        userId,
+        organizationId,
+        role
+      );
+      res.status(201).json(toCreationResponse(result));
+    }
+  );
+
+  // Quitar un usuario de una organización
+  public removeUserFromOrganization = errorWrapper(
+    async (req: Request, res: Response) => {
+      const { id: organizationId, userId } = req.params;
+      await organizationService.removeUserFromOrganization(
+        userId,
+        organizationId
+      );
+      res.status(204).json(toDeleteResponse);
+    }
+  );
+
+  // Actualizar el rol de un usuario en una organización
+  public updateUserRole = errorWrapper(async (req: Request, res: Response) => {
+    const { id: organizationId, userId } = req.params;
+    const { role } = req.body.data;
+    const result = await organizationService.updateUserRole(
+      userId,
+      organizationId,
+      role
+    );
+    res.status(200).json(toUpdateResponse(result));
+  });
 }
 
 export const organizationController = new OrganizationController();

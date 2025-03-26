@@ -42,13 +42,12 @@ const NewsSchema = BasicPostSchema.extend({
 
 export const CreatePostSchema = z.union([EventSchema, OfferSchema, NewsSchema]);
 
-const UpdateBasicPostSchema = BasicPostSchema.partial();
-const UpdateEventSchema = UpdateBasicPostSchema.extend({
-  type: z.literal("event").optional(),
-  date: z.preprocess(
-    (arg) => (arg ? new Date(arg as string) : undefined),
-    z.date()
-  ).optional(),
-  location: string().optional(),
-  registration_link: string().optional(),
-});
+export const UpdateEventSchema = EventSchema.partial();
+export const UpdateOfferSchema = OfferSchema.partial();
+export const UpdateNewsSchema = NewsSchema.partial();
+
+export const UpdatePostSchema = z.union([
+  UpdateEventSchema,
+  UpdateOfferSchema,
+  UpdateNewsSchema,
+]);

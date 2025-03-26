@@ -22,6 +22,7 @@ class AuthService {
 
       return {
         user: {
+          _id: userExists.id,
           name: userExists.name,
           email: userExists.email,
         },

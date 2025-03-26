@@ -1,45 +1,24 @@
-import mongoose from "mongoose";
+import { ValidationError } from "../exceptions";
 import { PostDocument, PostModel } from "../models/post.model";
 import { Post, PostUpdate } from "../types/post.types";
-import { userService } from "./user.service";
-import { ValidationError } from "../exceptions";
 
 class PostService {
   public async create(post: Post, user_id: string): Promise<PostDocument> {
-    try {
-      if (!userService.userExists(user_id)) {
-        throw new ReferenceError("User with that id does not exist");
-      }
-
-      post.published_by = user_id;
-
-      return await PostModel.create(post);
-    } catch (error) {
-      throw error;
-    }
+    post.published_by = user_id;
+    return await PostModel.create(post);
   }
 
   public async getAll(): Promise<PostDocument[]> {
-    try {
-      return await PostModel.find();
-    } catch (error) {
-      throw error;
-    }
+    return await PostModel.find();
   }
 
   public async getById(id: string): Promise<PostDocument> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("Invalid post ID");
-      }
-      const post = await PostModel.findById(id);
+    return await PostModel.findById(id).then((post) => {
       if (!post) {
         throw new Error(`Post with id ${id} not found`);
       }
       return post;
-    } catch (error) {
-      throw error;
-    }
+    });
   }
 
   public async getAttendableById(id: string): Promise<PostDocument> {
@@ -50,17 +29,28 @@ class PostService {
     return post;
   }
 
-  public async update(id: string, post: PostUpdate): Promise<PostDocument | null> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new Error("Invalid post ID");
-      }
-      return await PostModel.findByIdAndUpdate(id, post, {
-        returnOriginal: false,
-      })
-    } catch (error) {
-      throw error;
+  public async update(
+    id: string,
+    post: PostUpdate
+  ): Promise<PostDocument | null> {
+    const existingPost = await PostModel.findById(id);
+    if (!existingPost) {
+      throw new Error(`Post with id ${id} not found`);
     }
+
+    return await PostModel.findByIdAndUpdate(id, post, {
+      returnOriginal: false,
+    });
+  }
+
+  public async delete(id: string): Promise<void> {
+    await PostModel.findByIdAndDelete(id);
+  }
+
+  private async exists(id: string): Promise<boolean> {
+    return await PostModel.exists({ _id: id }).then(
+      (result) => result !== null
+    );
   }
 }
 

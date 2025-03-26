@@ -1,9 +1,9 @@
-import { AttendeeModel, PostDocument, UserDocument } from "../models";
-import { EventAttendee } from "../types/post.types";
-import { userService } from "./user.service";
-import { postService } from "./post.service";
 import { AlreadyExistsError, NotFoundError } from "../exceptions";
 import { userMapper } from "../mappers";
+import { AttendeeModel, PostDocument, UserDocument } from "../models";
+import { EventAttendee } from "../types/post.types";
+import { postService } from "./post.service";
+import { userService } from "./user.service";
 
 class AttendeeService {
   public async enroll(enrollment: EventAttendee) {

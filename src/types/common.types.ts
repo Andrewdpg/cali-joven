@@ -51,3 +51,17 @@ export type ErrorResponse = BasicResponse & {
     details: string;
   };
 } & Metadata;
+
+export type Pagination = {
+  page: number;
+  pageSize: number;
+  totalPage: number;
+  totalItems: number;
+};
+
+export type GetResponse = BasicResponse & {
+  data: {
+    resource: any;
+    pagination?: Pagination;
+  };
+} & Metadata;
