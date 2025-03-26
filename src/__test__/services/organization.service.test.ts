@@ -3,7 +3,7 @@
  */
 import mongoose from "mongoose";
 import { organizationService } from "../../services/organization.service";
-import { OrganizationModel } from "../../models";
+import { OrganizationModel, UserOrganizationModel } from "../../models";
 import {
   AlreadyExistsError,
   NotFoundError,
@@ -206,6 +206,157 @@ describe("OrganizationService", () => {
 
       await expect(organizationService.deleteById("validId")).rejects.toThrow(
         NotFoundError
+      );
+    });
+  });
+
+  describe("addUserToOrganization", () => {
+    const mockUserId = "507f191e810c19729de860ea";
+    const mockOrganizationId = "507f191e810c19729de860eb";
+    const mockRole = "admin";
+
+    it("debería agregar un usuario a una organización", async () => {
+      (UserOrganizationModel.findOne as jest.Mock).mockResolvedValue(null);
+      (UserOrganizationModel.create as jest.Mock).mockResolvedValue({
+        user: mockUserId,
+        organization: mockOrganizationId,
+        role: mockRole,
+      });
+
+      const result = await organizationService.addUserToOrganization(
+        mockUserId,
+        mockOrganizationId,
+        mockRole
+      );
+
+      expect(result).toEqual({
+        user: mockUserId,
+        organization: mockOrganizationId,
+        role: mockRole,
+      });
+      expect(UserOrganizationModel.findOne).toHaveBeenCalledWith({
+        user: mockUserId,
+        organization: mockOrganizationId,
+      });
+      expect(UserOrganizationModel.create).toHaveBeenCalledWith({
+        user: mockUserId,
+        organization: mockOrganizationId,
+        role: mockRole,
+      });
+    });
+
+    it("debería lanzar un error si el usuario ya pertenece a la organización", async () => {
+      (UserOrganizationModel.findOne as jest.Mock).mockResolvedValue({
+        user: mockUserId,
+        organization: mockOrganizationId,
+        role: mockRole,
+      });
+
+      await expect(
+        organizationService.addUserToOrganization(
+          mockUserId,
+          mockOrganizationId,
+          mockRole
+        )
+      ).rejects.toThrow(AlreadyExistsError);
+
+      expect(UserOrganizationModel.findOne).toHaveBeenCalledWith({
+        user: mockUserId,
+        organization: mockOrganizationId,
+      });
+      expect(UserOrganizationModel.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("removeUserFromOrganization", () => {
+    const mockUserId = "507f191e810c19729de860ea";
+    const mockOrganizationId = "507f191e810c19729de860eb";
+
+    it("debería eliminar un usuario de una organización", async () => {
+      (UserOrganizationModel.findOneAndDelete as jest.Mock).mockResolvedValue({
+        user: mockUserId,
+        organization: mockOrganizationId,
+      });
+
+      await expect(
+        organizationService.removeUserFromOrganization(
+          mockUserId,
+          mockOrganizationId
+        )
+      ).resolves.not.toThrow();
+
+      expect(UserOrganizationModel.findOneAndDelete).toHaveBeenCalledWith({
+        user: mockUserId,
+        organization: mockOrganizationId,
+      });
+    });
+
+    it("debería lanzar un error si el usuario no pertenece a la organización", async () => {
+      (UserOrganizationModel.findOneAndDelete as jest.Mock).mockResolvedValue(
+        null
+      );
+
+      await expect(
+        organizationService.removeUserFromOrganization(
+          mockUserId,
+          mockOrganizationId
+        )
+      ).rejects.toThrow(NotFoundError);
+
+      expect(UserOrganizationModel.findOneAndDelete).toHaveBeenCalledWith({
+        user: mockUserId,
+        organization: mockOrganizationId,
+      });
+    });
+  });
+
+  describe("updateUserRole", () => {
+    const mockUserId = "507f191e810c19729de860ea";
+    const mockOrganizationId = "507f191e810c19729de860eb";
+    const mockRole = "editor";
+
+    it("debería actualizar el rol de un usuario en una organización", async () => {
+      (UserOrganizationModel.findOneAndUpdate as jest.Mock).mockResolvedValue({
+        user: mockUserId,
+        organization: mockOrganizationId,
+        role: mockRole,
+      });
+
+      const result = await organizationService.updateUserRole(
+        mockUserId,
+        mockOrganizationId,
+        mockRole
+      );
+
+      expect(result).toEqual({
+        user: mockUserId,
+        organization: mockOrganizationId,
+        role: mockRole,
+      });
+      expect(UserOrganizationModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { user: mockUserId, organization: mockOrganizationId },
+        { role: mockRole },
+        { new: true }
+      );
+    });
+
+    it("debería lanzar un error si el usuario no pertenece a la organización", async () => {
+      (UserOrganizationModel.findOneAndUpdate as jest.Mock).mockResolvedValue(
+        null
+      );
+
+      await expect(
+        organizationService.updateUserRole(
+          mockUserId,
+          mockOrganizationId,
+          mockRole
+        )
+      ).rejects.toThrow(NotFoundError);
+
+      expect(UserOrganizationModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { user: mockUserId, organization: mockOrganizationId },
+        { role: mockRole },
+        { new: true }
       );
     });
   });

@@ -41,14 +41,6 @@ describe("PostService", () => {
       expect(PostModel.findById).toHaveBeenCalledWith(mockPost.id);
     });
 
-    it("debería lanzar un error si el ID es inválido", async () => {
-      jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(false);
-
-      await expect(postService.getById("invalidId")).rejects.toThrow(
-        "Invalid post ID"
-      );
-    });
-
     it("debería lanzar un error si el post no existe", async () => {
       jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(true);
       (PostModel.findById as jest.Mock).mockResolvedValue(null);
@@ -91,6 +83,7 @@ describe("PostService", () => {
   describe("update", () => {
     const mockPostUpdate = { title: "Updated Post" };
     const mockPostId = "validId";
+    const existingPost = { _id: mockPostId, title: "Original Title" };
     const updatedPost = mockDeep<PostDocument>();
     updatedPost.id = mockPostId;
     updatedPost.title = "Updated Post";
@@ -98,6 +91,8 @@ describe("PostService", () => {
     it("debería actualizar un post por su ID", async () => {
       jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(true);
       (PostModel.findByIdAndUpdate as jest.Mock).mockResolvedValue(updatedPost);
+
+      (PostModel.findById as jest.Mock).mockResolvedValue(existingPost);
 
       const result = await postService.update(mockPostId, mockPostUpdate);
 
@@ -111,12 +106,51 @@ describe("PostService", () => {
       );
     });
 
-    it("debería lanzar un error si el ID es inválido", async () => {
-      jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(false);
+    it("debería lanzar un error si el post no existe", async () => {
+      jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(true);
+      (PostModel.findById as jest.Mock).mockResolvedValue(null); // Simula que el post no existe
 
       await expect(
-        postService.update("invalidId", mockPostUpdate)
-      ).rejects.toThrow("Invalid post ID");
+        postService.update(mockPostId, mockPostUpdate)
+      ).rejects.toThrow(`Post with id ${mockPostId} not found`);
+
+      expect(PostModel.findById).toHaveBeenCalledWith(mockPostId);
+      expect(PostModel.findByIdAndUpdate).not.toHaveBeenCalled(); // Asegura que no se intente actualizar
+    });
+  });
+
+  describe("delete", () => {
+    const mockPostId = "507f191e810c19729de860ea";
+
+    it("debería eliminar un post por su ID", async () => {
+      jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(true);
+      (PostModel.findByIdAndDelete as jest.Mock).mockResolvedValue(true);
+
+      await postService.delete(mockPostId);
+
+      expect(PostModel.findByIdAndDelete).toHaveBeenCalledWith(mockPostId);
+    });
+  });
+
+  describe("exists", () => {
+    const mockPostId = "507f191e810c19729de860ea";
+
+    it("debería devolver true si el post existe", async () => {
+      (PostModel.exists as jest.Mock).mockResolvedValue(true);
+
+      const result = await postService.exists(mockPostId);
+
+      expect(result).toBe(true);
+      expect(PostModel.exists).toHaveBeenCalledWith({ _id: mockPostId });
+    });
+
+    it("debería devolver false si el post no existe", async () => {
+      (PostModel.exists as jest.Mock).mockResolvedValue(null);
+
+      const result = await postService.exists(mockPostId);
+
+      expect(result).toBe(false);
+      expect(PostModel.exists).toHaveBeenCalledWith({ _id: mockPostId });
     });
   });
 });

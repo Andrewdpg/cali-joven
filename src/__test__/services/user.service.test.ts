@@ -130,7 +130,9 @@ describe("UserService", () => {
     it("should return null if the user does not exist", async () => {
       (UserModel.findOne as jest.Mock).mockResolvedValue(null);
 
-      const result = await userService.findUserByEmail("nonexistent@example.com");
+      const result = await userService.findUserByEmail(
+        "nonexistent@example.com"
+      );
 
       expect(result).toBeNull();
     });
@@ -160,6 +162,7 @@ describe("UserService", () => {
    */
   describe("updateUserByEmail", () => {
     const mockUser = {
+      _id: "507f191e810c19729de860ea",
       name: "Updated User",
       email: "test@example.com",
       authorities: ["USER"],
@@ -171,17 +174,19 @@ describe("UserService", () => {
         select: jest.fn().mockReturnValue(mockUser),
       };
 
-      (UserModel.findByIdAndUpdate as jest.Mock).mockReturnValue(mockUpdatedUser);
+      (UserModel.findByIdAndUpdate as jest.Mock).mockReturnValue(
+        mockUpdatedUser
+      );
 
-      const result = await userService.updateUserByEmail(mockUser.email, {
+      const result = await userService.updateUserById(mockUser._id, {
         name: "Updated User",
       });
 
       expect(result).toEqual(mockUser);
       expect(UserModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        { email: mockUser.email },
+        mockUser._id, // Cambiado para usar el ID directamente
         { name: "Updated User" },
-        { returnOriginal: false }
+        { returnOriginal: false, new: true } // Asegúrate de incluir `new: true`
       );
       expect(mockUpdatedUser.select).toHaveBeenCalledWith("-password");
     });
@@ -198,11 +203,21 @@ describe("UserService", () => {
       authorities: ["USER"],
     };
 
+    const authUser = {
+      _id: "validId2",
+      name: "Test User",
+      email: "test@example2.com",
+      authorities: ["USER"],
+    };
+
     it("should delete a user by ID", async () => {
       jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(true);
       (UserModel.findByIdAndDelete as jest.Mock).mockResolvedValue(mockUser);
 
-      const result = await userService.deleteUserById(mockUser._id);
+      const result = await userService.deleteUserById(
+        mockUser._id,
+        authUser._id
+      );
 
       expect(result).toEqual({
         name: mockUser.name,
@@ -214,16 +229,16 @@ describe("UserService", () => {
     it("should throw an error if the ID is invalid", async () => {
       jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(false);
 
-      await expect(userService.deleteUserById("invalidId")).rejects.toThrow(
-        "Invalid user ID"
-      );
+      await expect(
+        userService.deleteUserById("invalidId", authUser._id)
+      ).rejects.toThrow("Invalid user ID");
     });
 
     it("should return null if the user does not exist", async () => {
       jest.spyOn(mongoose.Types.ObjectId, "isValid").mockReturnValue(true);
       (UserModel.findByIdAndDelete as jest.Mock).mockResolvedValue(null);
 
-      const result = await userService.deleteUserById("validId");
+      const result = await userService.deleteUserById("validId", authUser._id);
 
       expect(result).toBeNull();
     });
@@ -253,7 +268,9 @@ describe("UserService", () => {
     it("should return null if the user does not exist", async () => {
       (UserModel.findOneAndDelete as jest.Mock).mockResolvedValue(null);
 
-      const result = await userService.deleteUserByEmail("nonexistent@example.com");
+      const result = await userService.deleteUserByEmail(
+        "nonexistent@example.com"
+      );
 
       expect(result).toBeNull();
     });
@@ -270,6 +287,89 @@ describe("UserService", () => {
 
       expect(result).toBe(true);
       expect(UserModel.exists).toHaveBeenCalledWith({ id: "validId" });
+    });
+
+    it("should return false if the user does not exist", async () => {
+      (UserModel.exists as jest.Mock).mockResolvedValue(null);
+
+      const result = await userService.userExists("invalidId");
+
+      expect(result).toBe(false);
+      expect(UserModel.exists).toHaveBeenCalledWith({ id: "invalidId" });
+    });
+  });
+
+  /**
+   * Tests for the addRoleToUser and removeRoleFromUser methods.
+   */
+  describe("Roles management", () => {
+    const mockUser = {
+      _id: "validId",
+      name: "Test User",
+      email: "test@example.com",
+      authorities: ["USER"],
+      save: jest.fn(),
+    };
+
+    describe("addRoleToUser", () => {
+      it("should add a role to a user", async () => {
+        (UserModel.findById as jest.Mock).mockResolvedValue(mockUser);
+
+        const result = await userService.addRoleToUser(mockUser._id, "ADMIN");
+
+        expect(result.authorities).toContain("ADMIN");
+        expect(mockUser.save).toHaveBeenCalled();
+      });
+
+      it("should throw an error if the user does not exist", async () => {
+        (UserModel.findById as jest.Mock).mockResolvedValue(null);
+
+        await expect(
+          userService.addRoleToUser("invalidId", "ADMIN")
+        ).rejects.toThrow("User not found");
+      });
+
+      it("should throw an error if the user already has the role", async () => {
+        (UserModel.findById as jest.Mock).mockResolvedValue(mockUser);
+
+        await expect(
+          userService.addRoleToUser(mockUser._id, "USER")
+        ).rejects.toThrow("User already has this role");
+      });
+    });
+
+    describe("removeRoleFromUser", () => {
+      it("should remove a role from a user", async () => {
+        (UserModel.findById as jest.Mock).mockResolvedValue(mockUser);
+
+        const result = await userService.removeRoleFromUser(
+          mockUser._id,
+          "USER"
+        );
+
+        expect(result.authorities).not.toContain("USER");
+        expect(mockUser.save).toHaveBeenCalled();
+      });
+
+      it("should throw an error if the user does not exist", async () => {
+        (UserModel.findById as jest.Mock).mockResolvedValue(null);
+
+        await expect(
+          userService.removeRoleFromUser("invalidId", "USER")
+        ).rejects.toThrow("User not found");
+      });
+
+      it("should not fail if the user does not have the role", async () => {
+        (UserModel.findById as jest.Mock).mockResolvedValue(mockUser);
+
+        const result = await userService.removeRoleFromUser(
+          mockUser._id,
+          "NON_EXISTENT_ROLE"
+        );
+
+        expect(result.authorities).not.toContain("NON_EXISTENT_ROLE");
+        expect(mockUser.save).toHaveBeenCalled();
+      });
     });
   });
 });

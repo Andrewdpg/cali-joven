@@ -47,7 +47,7 @@ class PostService {
     await PostModel.findByIdAndDelete(id);
   }
 
-  private async exists(id: string): Promise<boolean> {
+  public async exists(id: string): Promise<boolean> {
     return await PostModel.exists({ _id: id }).then(
       (result) => result !== null
     );
