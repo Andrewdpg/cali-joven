@@ -3,10 +3,6 @@ import { object, string, z } from "zod";
 const BasicPostSchema = object({
   title: string({ required_error: "title is required" }),
   description: string({ required_error: "description is required" }),
-  type: z.enum(["event", "offer", "news"], {
-    required_error: "type is required",
-    invalid_type_error: "type must be one of 'event', 'offer', or 'news'",
-  }),
   attachments: string().optional(),
   images: string().array().optional(),
   organizer_id: string({ required_error: "organizer_id is required" }),
@@ -15,7 +11,6 @@ const BasicPostSchema = object({
 });
 
 const EventSchema = BasicPostSchema.extend({
-  type: z.literal("event"),
   date: z.preprocess(
     (arg) => (arg ? new Date(arg as string) : undefined),
     z.date()
@@ -27,7 +22,6 @@ const EventSchema = BasicPostSchema.extend({
 });
 
 const OfferSchema = BasicPostSchema.extend({
-  type: z.literal("offer"),
   external_link: string({ required_error: "external_link is required" }),
   deadline: z.preprocess(
     (arg) => (arg ? new Date(arg as string) : undefined),
@@ -36,7 +30,6 @@ const OfferSchema = BasicPostSchema.extend({
 });
 
 const NewsSchema = BasicPostSchema.extend({
-  type: z.literal("news"),
   author: string({ required_error: "author is required" }),
 });
 
