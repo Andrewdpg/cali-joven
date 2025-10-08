@@ -1,0 +1,36 @@
+name: CI - Tests & Sonar
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-sonar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests and coverage
+        run: npm test -- --coverage
+
+      - name: Run SonarScanner
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          npx sonar-scanner \
+            -D"sonar.login=$SONAR_TOKEN" \
+            -D"sonar.host.url=$SONAR_HOST_URL" \
+            -D"sonar.projectKey=cali-joven" \
+            -D"sonar.typescript.lcov.reportPaths=coverage/lcov.info" \
+            -D"sonar.qualitygate.wait=true"

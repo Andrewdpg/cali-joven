@@ -1,0 +1,203 @@
+name: CI/CD Pipeline - SonarQube Analysis & Azure Deployment
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+        - dev
+        - staging
+        - production
+
+env:
+  NODE_VERSION: '18'
+  SONAR_PROJECT_KEY: 'cali-joven'
+  SONAR_PROJECT_NAME: 'Cali Joven'
+  AZURE_CLI_VERSION: '2.53.0'
+
+jobs:
+  # Job de análisis de código y pruebas
+  code-analysis:
+    name: Code Analysis & Tests
+    runs-on: ubuntu-latest
+    outputs:
+      coverage: ${{ steps.coverage.outputs.coverage }}
+      quality-gate: ${{ steps.sonar.outputs.quality-gate-status }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para SonarQube
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint || true
+
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Run tests with coverage
+        id: coverage
+        run: |
+          npm test -- --coverage --coverageReporters=text-lcov > coverage.lcov
+          echo "coverage=$(cat coverage/lcov.info | grep -o 'lines.*: [0-9.]*%' | head -1 | grep -o '[0-9.]*%')" >> $GITHUB_OUTPUT
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: SonarQube Scan
+        id: sonar
+        uses: sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.projectName=${{ env.SONAR_PROJECT_NAME }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.sources=src
+            -Dsonar.tests=src/__test__
+            -Dsonar.test.inclusions=**/*.test.ts,**/*.spec.ts
+            -Dsonar.exclusions=node_modules/**,dist/**,coverage/**,**/*.d.ts
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.pullrequest.key=${{ github.event.pull_request.number }}
+            -Dsonar.pullrequest.branch=${{ github.head_ref }}
+            -Dsonar.pullrequest.base=${{ github.base_ref }}
+
+  # Job de construcción y empaquetado
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: code-analysis
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-files
+          path: dist/
+          retention-days: 30
+
+  # Job de despliegue de infraestructura (solo en main)
+  deploy-infrastructure:
+    name: Deploy Infrastructure to Azure
+    runs-on: ubuntu-latest
+    needs: [code-analysis]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Azure CLI
+        uses: azure/setup-azd@v1
+        with:
+          azd-version: '1.0.0'
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Infrastructure
+        run: |
+          cd infrastructure/azure
+          ./deploy.sh ${{ github.event.inputs.environment || 'dev' }} "East US"
+        env:
+          TF_VAR_environment: ${{ github.event.inputs.environment || 'dev' }}
+          TF_VAR_location: "East US"
+
+  # Job de despliegue de aplicación (solo en main)
+  deploy-application:
+    name: Deploy Application to Azure VM
+    runs-on: ubuntu-latest
+    needs: [code-analysis, build, deploy-infrastructure]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ansible
+        run: |
+          pip install ansible
+          ansible --version
+
+      - name: Deploy Application
+        run: |
+          cd infrastructure/ansible
+          ansible-playbook -i inventory.ini playbooks/deploy_application.yml --ask-become-pass
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False
+          VM_IP: ${{ secrets.VM_IP }}
+          VM_USER: ${{ secrets.VM_USER }}
+
+  # Job de notificaciones
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [code-analysis, build, deploy-infrastructure, deploy-application]
+    if: always()
+
+    steps:
+      - name: Notify success
+        if: needs.code-analysis.result == 'success' && needs.build.result == 'success'
+        run: |
+          echo "✅ Pipeline completed successfully!"
+          echo "Coverage: ${{ needs.code-analysis.outputs.coverage }}"
+          echo "Quality Gate: ${{ needs.code-analysis.outputs.quality-gate }}"
+
+      - name: Notify failure
+        if: needs.code-analysis.result == 'failure' || needs.build.result == 'failure'
+        run: |
+          echo "❌ Pipeline failed!"
+          echo "Code Analysis: ${{ needs.code-analysis.result }}"
+          echo "Build: ${{ needs.build.result }}"
+

@@ -1,0 +1,28 @@
+# Variables for the sonarqube group
+# These variables can be overridden by inventory or extra-vars
+# For production, consider using Ansible Vault to protect these passwords
+
+# SonarQube Admin Password
+# ansible-vault encrypt_string 'your_admin_password' --name 'vault_sonar_admin_password'
+vault_sonar_admin_password: "admin123"
+
+# PostgreSQL Configuration
+postgresql_host: "{{ postgresql_fqdn | default('localhost') }}"
+postgresql_port: 5432
+postgresql_database: "{{ postgresql_database | default('sonar') }}"
+postgresql_username: "{{ postgresql_username | default('sonar') }}"
+postgresql_password: "{{ postgresql_password | default('sonar_password') }}"
+
+# SonarQube Project Configuration
+sonar_project_key: "cali-joven"
+sonar_project_name: "Cali Joven"
+sonar_create_project: true
+
+# SonarQube Version
+sonar_version: "10.6.0.88814"
+
+# Installation Paths
+sonar_install_dir: "/opt/sonarqube"
+sonar_user: "sonar"
+sonar_group: "sonar"
+

@@ -1,0 +1,16 @@
+sonar
+|-- .github
+|   `-- workflows
+|       `-- ci-sonar.yml
+|-- infrastructure
+|   `-- ansible
+|       |-- inventory.ini
+|       |-- README.md
+|       `-- playbooks
+|           `-- install_sonarqube.yml
+|-- src
+|   |-- ... (código fuente)
+|-- sonar-project.properties
+|-- package.json
+|-- jest.config.js
+|-- README.md

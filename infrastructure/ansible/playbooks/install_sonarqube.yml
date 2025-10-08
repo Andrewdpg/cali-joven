@@ -1,0 +1,180 @@
+---
+- name: Install and Configure SonarQube on Azure VM
+  hosts: sonarqube
+  become: yes
+  vars:
+    sonar_version: '10.6.0.88814'
+    sonar_download_url: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip"
+    sonar_install_dir: /opt/sonarqube
+    sonar_user: sonar
+    sonar_group: sonar
+    sonar_admin_password: "{{ vault_sonar_admin_password | default('admin123') }}"
+    sonar_host: "{{ ansible_default_ipv4.address | default('localhost') }}"
+    sonar_port: 9000
+    postgresql_host: "{{ postgresql_fqdn | default('localhost') }}"
+    postgresql_port: 5432
+    postgresql_database: "{{ postgresql_database | default('sonar') }}"
+    postgresql_username: "{{ postgresql_username | default('sonar') }}"
+    postgresql_password: "{{ postgresql_password | default('sonar_password') }}"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - openjdk-17-jdk
+          - unzip
+          - wget
+          - nginx
+          - postgresql-client
+          - curl
+          - htop
+          - ufw
+          - python3-pip
+        state: present
+
+    - name: Set JAVA_HOME environment variable
+      lineinfile:
+        path: /etc/environment
+        line: 'JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"'
+        create: yes
+
+    - name: Create sonar user and group
+      user:
+        name: "{{ sonar_user }}"
+        group: "{{ sonar_group }}"
+        system: yes
+        shell: /bin/bash
+        home: /var/sonarqube
+        create_home: yes
+
+    - name: Create SonarQube installation directory
+      file:
+        path: "{{ sonar_install_dir }}"
+        state: directory
+        owner: "{{ sonar_user }}"
+        group: "{{ sonar_group }}"
+        mode: '0755'
+
+    - name: Download SonarQube
+      get_url:
+        url: "{{ sonar_download_url }}"
+        dest: "/tmp/sonarqube-{{ sonar_version }}.zip"
+        mode: '0644'
+        timeout: 300
+
+    - name: Extract SonarQube
+      unarchive:
+        src: "/tmp/sonarqube-{{ sonar_version }}.zip"
+        dest: "/tmp"
+        remote_src: yes
+        owner: "{{ sonar_user }}"
+        group: "{{ sonar_group }}"
+
+    - name: Move SonarQube to installation directory
+      shell: |
+        cp -r /tmp/sonarqube-{{ sonar_version }}/* {{ sonar_install_dir }}/
+        chown -R {{ sonar_user }}:{{ sonar_group }} {{ sonar_install_dir }}
+      args:
+        creates: "{{ sonar_install_dir }}/bin"
+
+    - name: Configure SonarQube properties
+      template:
+        src: sonar.properties.j2
+        dest: "{{ sonar_install_dir }}/conf/sonar.properties"
+        owner: "{{ sonar_user }}"
+        group: "{{ sonar_group }}"
+        mode: '0644'
+        backup: yes
+
+    - name: Create SonarQube systemd service
+      template:
+        src: sonarqube.service.j2
+        dest: /etc/systemd/system/sonarqube.service
+        mode: '0644'
+        backup: yes
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start SonarQube service
+      systemd:
+        name: sonarqube
+        enabled: yes
+        state: started
+
+    - name: Configure UFW firewall
+      ufw:
+        rule: allow
+        port: "{{ sonar_port }}"
+        proto: tcp
+
+    - name: Configure Nginx
+      template:
+        src: nginx-sonarqube.conf.j2
+        dest: /etc/nginx/sites-available/sonarqube
+        mode: '0644'
+        backup: yes
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/sonarqube
+        dest: /etc/nginx/sites-enabled/sonarqube
+        state: link
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Test Nginx configuration
+      command: nginx -t
+      register: nginx_test
+      changed_when: false
+
+    - name: Restart Nginx
+      systemd:
+        name: nginx
+        state: restarted
+      when: nginx_test.rc == 0
+
+    - name: Wait for SonarQube to start
+      uri:
+        url: "http://localhost:{{ sonar_port }}/api/system/status"
+        method: GET
+        status_code: 200
+      register: sonar_status
+      retries: 30
+      delay: 10
+      until: sonar_status.status == 200
+
+    - name: Create SonarQube project via API
+      uri:
+        url: "http://localhost:{{ sonar_port }}/api/projects/create"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          name: "{{ sonar_project_name | default('Cali Joven') }}"
+          project: "{{ sonar_project_key | default('cali-joven') }}"
+        user: admin
+        password: "{{ sonar_admin_password }}"
+        status_code: 200
+      when: sonar_create_project | default(false)
+
+    - name: Display SonarQube access information
+      debug:
+        msg:
+          - "SonarQube has been successfully installed and configured!"
+          - "Access SonarQube at: http://{{ sonar_host }}:{{ sonar_port }}"
+          - "Or through Nginx at: http://{{ sonar_host }}"
+          - "Default admin credentials: admin / {{ sonar_admin_password }}"
+          - "PostgreSQL Database: {{ postgresql_host }}:{{ postgresql_port }}/{{ postgresql_database }}"
+          - "Next steps:"
+          - "1. Change the default admin password"
+          - "2. Configure GitHub Actions with the SonarQube token"
+          - "3. Set up quality gates and rules"
