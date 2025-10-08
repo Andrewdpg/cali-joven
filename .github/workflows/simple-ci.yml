@@ -33,10 +33,11 @@ jobs:
         run: npm test
 
       - name: SonarQube Scan
+        if: ${{ secrets.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN || '' }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
         with:
           args: >
@@ -44,3 +45,9 @@ jobs:
             -Dsonar.projectName="Cali Joven"
             -Dsonar.sources=src
             -Dsonar.exclusions=node_modules/**,dist/**,coverage/**,**/*.d.ts
+
+      - name: SonarQube Scan Skipped
+        if: ${{ secrets.SONAR_TOKEN == '' }}
+        run: |
+          echo "⚠️ SonarQube scan skipped - SONAR_TOKEN not configured"
+          echo "To enable SonarQube analysis, add SONAR_TOKEN to repository secrets"
