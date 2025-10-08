@@ -2,9 +2,9 @@ name: CI - Tests & Sonar
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop, sonarq ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop, sonarq ]
 
 jobs:
   test-and-sonar:

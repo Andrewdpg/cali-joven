@@ -2,9 +2,9 @@ name: CI/CD Pipeline - SonarQube Analysis & Azure Deployment
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, sonarq ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, sonarq ]
   workflow_dispatch:
     inputs:
       environment:
