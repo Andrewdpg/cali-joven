@@ -32,8 +32,17 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Check SonarQube Token
+        id: check-sonar-token
+        run: |
+          if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "sonar-token-exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "sonar-token-exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: SonarQube Scan
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+        if: steps.check-sonar-token.outputs.sonar-token-exists == 'true'
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,7 +56,7 @@ jobs:
             -Dsonar.exclusions=node_modules/**,dist/**,coverage/**,**/*.d.ts
 
       - name: SonarQube Scan Skipped
-        if: ${{ secrets.SONAR_TOKEN == '' }}
+        if: steps.check-sonar-token.outputs.sonar-token-exists == 'false'
         run: |
           echo "⚠️ SonarQube scan skipped - SONAR_TOKEN not configured"
           echo "To enable SonarQube analysis, add SONAR_TOKEN to repository secrets"
