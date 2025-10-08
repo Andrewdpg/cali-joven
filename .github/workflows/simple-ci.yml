@@ -1,21 +1,29 @@
-name: CI - Tests & Sonar
+name: Simple CI - Tests & SonarQube
 
 on:
   push:
     branches: [ main, develop, sonarq ]
   pull_request:
     branches: [ main, develop, sonarq ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  SONAR_PROJECT_KEY: 'cali-joven'
+  SONAR_PROJECT_NAME: 'Cali Joven'
 
 jobs:
   test-and-sonar:
+    name: Test & SonarQube Analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Use Node.js 18
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -32,7 +40,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
-            -Dsonar.projectKey=cali-joven
-            -Dsonar.projectName=Cali Joven
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.projectName=${{ env.SONAR_PROJECT_NAME }}
             -Dsonar.sources=src
             -Dsonar.exclusions=node_modules/**,dist/**,coverage/**,**/*.d.ts
