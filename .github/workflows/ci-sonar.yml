@@ -28,11 +28,11 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN || '' }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
         with:
           args: >
             -Dsonar.projectKey=cali-joven
-            -Dsonar.projectName=Cali Joven
+            -Dsonar.projectName="Cali Joven"
             -Dsonar.sources=src
             -Dsonar.exclusions=node_modules/**,dist/**,coverage/**,**/*.d.ts
