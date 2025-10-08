@@ -349,6 +349,59 @@ df -h
 netstat -tulpn
 ```
 
+## 🔒 Análisis de Seguridad con Trivy
+
+### ¿Qué es Trivy?
+
+Trivy es un escáner de vulnerabilidades de código abierto que puede detectar:
+- **Vulnerabilidades en dependencias** (npm, pip, etc.)
+- **Vulnerabilidades en imágenes Docker**
+- **Problemas de configuración** en archivos
+- **Secretos expuestos** en el código
+
+### Uso Local
+
+#### Windows (PowerShell):
+```powershell
+# Escaneo básico
+.\scripts\trivy-scan.ps1
+
+# Escaneo con formato JSON
+.\scripts\trivy-scan.ps1 -Format "json" -Output "trivy-results.json"
+
+# Escaneo solo vulnerabilidades críticas y altas
+.\scripts\trivy-scan.ps1 -Severity "CRITICAL,HIGH"
+```
+
+#### Linux/macOS (Bash):
+```bash
+# Hacer ejecutable
+chmod +x scripts/trivy-scan.sh
+
+# Escaneo básico
+./scripts/trivy-scan.sh
+
+# Escaneo con formato SARIF
+./scripts/trivy-scan.sh "fs" "." "sarif" "trivy-results.sarif"
+```
+
+### Integración en CI/CD
+
+Trivy está integrado en el workflow de seguridad (`.github/workflows/security-scan.yml`) y se ejecuta automáticamente en:
+- **Push a main/develop**
+- **Pull Requests**
+- **Programación diaria** (medianoche)
+
+### Herramientas de Seguridad Incluidas
+
+- **SonarQube**: Análisis de calidad de código y vulnerabilidades
+- **ESLint**: Análisis estático de JavaScript/TypeScript
+- **Jest**: Testing y cobertura de código
+- **NPM Audit**: Verificación de vulnerabilidades en dependencias
+- **Trivy**: Escaneo de vulnerabilidades en archivos y dependencias
+- **Snyk**: Análisis de vulnerabilidades en dependencias
+- **CodeQL**: Análisis de código para detectar vulnerabilidades
+
 ## 🚀 Próximos Pasos
 
 1. **Configurar Quality Gates** personalizados

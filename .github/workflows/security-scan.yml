@@ -29,12 +29,27 @@ jobs:
         run: npm audit --audit-level=high || true # Allow audit to fail without failing the workflow
 
       - name: Run Snyk Scan
-        uses: snyk/actions/node@master
+        uses: snyk/actions/node@v1.0.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: monitor
           args: --all-projects --severity-threshold=high || true # Monitor all projects and allow to fail
+
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@v0.32.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
